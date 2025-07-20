@@ -208,12 +208,37 @@ def api_status():
 def serve_react_app():
     """Serve the main React application"""
     try:
-        return send_file('static/index.html')
-    except FileNotFoundError:
+        # Check if static directory exists and has files
+        static_path = os.path.join(os.getcwd(), 'static')
+        index_path = os.path.join(static_path, 'index.html')
+        
+        print(f"🔍 Looking for React files in: {static_path}")
+        print(f"🔍 Index.html path: {index_path}")
+        print(f"🔍 Static directory exists: {os.path.exists(static_path)}")
+        print(f"🔍 Index.html exists: {os.path.exists(index_path)}")
+        
+        if os.path.exists(static_path):
+            print(f"📁 Static directory contents: {os.listdir(static_path)}")
+        
+        if os.path.exists(index_path):
+            print("✅ Serving React app")
+            return send_file('static/index.html')
+        else:
+            print("❌ index.html not found, serving fallback")
+            raise FileNotFoundError("React build files not found")
+            
+    except FileNotFoundError as e:
+        print(f"⚠️ FileNotFoundError: {e}")
         return jsonify({
             "message": "Task Companion API is running! 🚀",
-            "note": "React frontend will be available after build",
-            "status": "backend_only"
+            "note": "React frontend will be available after successful build",
+            "status": "backend_only",
+            "debug_info": {
+                "static_directory_exists": os.path.exists(os.path.join(os.getcwd(), 'static')),
+                "index_html_exists": os.path.exists(os.path.join(os.getcwd(), 'static', 'index.html')),
+                "current_directory": os.getcwd(),
+                "static_path": os.path.join(os.getcwd(), 'static')
+            }
         })
 
 @app.route('/<path:path>')
@@ -227,9 +252,39 @@ def serve_static_files(path):
         if os.path.exists(static_file_path):
             return send_from_directory('static', path)
         else:
-            return send_file('static/index.html')
+            # For React Router - serve index.html for any non-API route
+            index_path = os.path.join(app.static_folder, 'index.html')
+            if os.path.exists(index_path):
+                return send_file('static/index.html')
+            else:
+                return jsonify({
+                    "error": "React app not found",
+                    "message": "Frontend build files are missing",
+                    "status": "backend_only"
+                }), 404
     except FileNotFoundError:
-        return jsonify({"error": "File not found"}), 404
+        return jsonify({"error": "File not found", "path": path}), 404
+
+@app.route("/debug/static-info", methods=["GET"])
+def debug_static_info():
+    """Debug endpoint to check static files status"""
+    static_path = os.path.join(os.getcwd(), 'static')
+    
+    debug_info = {
+        "current_directory": os.getcwd(),
+        "static_directory_path": static_path,
+        "static_directory_exists": os.path.exists(static_path),
+        "app_static_folder": app.static_folder,
+        "files_in_static": []
+    }
+    
+    if os.path.exists(static_path):
+        try:
+            debug_info["files_in_static"] = os.listdir(static_path)
+        except Exception as e:
+            debug_info["error_listing_files"] = str(e)
+    
+    return jsonify(debug_info)
 
 if __name__ == "__main__":
     print("🚀 Starting Task Companion Backend...")
@@ -240,6 +295,7 @@ if __name__ == "__main__":
     print("   PUT    /api/update-task/<id>")
     print("   DELETE /api/delete-task/<id>")
     print("   DELETE /api/delete-old-tasks")
+    print("   GET    /debug/static-info")
     print("📱 Static Serving: React frontend integration enabled")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -3,26 +3,39 @@ services:
     name: fullstack-app
     env: python
     buildCommand: |
-      echo "=== Starting build process ===" &&
-      pwd &&
-      ls -la &&
+      echo "=== Build Process Starting ===" &&
+      echo "Working directory:" && pwd &&
+      echo "Directory contents:" && ls -la &&
+      echo "=== Installing Python Dependencies ===" &&
       pip install -r backend/requirements.txt &&
-      echo "=== Frontend build starting ===" &&
+      echo "=== Python dependencies installed successfully ===" &&
+      echo "=== Starting Frontend Build ===" &&
       cd frontend &&
-      pwd &&
-      npm install &&
+      echo "Frontend directory contents:" && ls -la &&
+      echo "Installing npm dependencies..." &&
+      npm ci --production=false &&
+      echo "Building React app..." &&
       npm run build &&
-      echo "=== Build completed, checking dist ===" &&
+      echo "Build completed, checking dist directory:" &&
       ls -la dist/ &&
+      echo "Dist directory contents:" &&
+      find dist -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -10 &&
+      echo "=== Returning to root directory ===" &&
       cd .. &&
-      echo "=== Creating static directory ===" &&
+      echo "=== Creating backend static directory ===" &&
+      rm -rf backend/static &&
       mkdir -p backend/static &&
-      echo "=== Copying files ===" &&
+      echo "=== Copying React build to Flask static directory ===" &&
       cp -r frontend/dist/* backend/static/ &&
-      echo "=== Verifying copy ===" &&
+      echo "=== Verifying files were copied ===" &&
+      echo "Backend static directory contents:" &&
       ls -la backend/static/ &&
-      echo "=== Build process complete ==="
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
+      echo "Checking for index.html:" &&
+      test -f backend/static/index.html && echo "✅ index.html found" || echo "❌ index.html missing" &&
+      echo "Checking for assets:" &&
+      ls -la backend/static/assets/ 2>/dev/null && echo "✅ Assets found" || echo "❌ Assets missing" &&
+      echo "=== Build Process Completed Successfully ==="
+    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 1
     workingDir: .
     plan: free
     envVars:
@@ -30,3 +43,5 @@ services:
         value: production
       - key: NODE_ENV
         value: production
+      - key: VITE_API_BASE_URL
+        value: ""
