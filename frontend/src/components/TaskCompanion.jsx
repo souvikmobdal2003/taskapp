@@ -4,14 +4,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon, faCloudSun, faCalendarDays, faChartLine, faPlus, faFire, faBell, faBellSlash } from '@fortawesome/free-solid-svg-icons';
 import { CheckCircle, Schedule, Assignment, TrendingUp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import '../TaskCompanion.css'; 
+import '../TaskCompanion.css';
 import Todo from './Todo';
 import NotificationManager from '../utils/NotificationManager';
 
-// Backend API URL
-const API_BASE_URL = 'http://127.0.0.1:5000';
-
 function TaskCompanion() {
+  // API Base URL - Set directly for development
+  const API_BASE_URL = 'http://127.0.0.1:5000';
+
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [showTodoModal, setShowTodoModal] = useState(false);
@@ -41,7 +41,8 @@ function TaskCompanion() {
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/get-tasks`);
+        // FIXED: Use full API URL for development
+        const response = await fetch(`${API_BASE_URL}/api/get-tasks`);
         if (response.ok) {
           const backendTasks = await response.json();
           
@@ -106,7 +107,8 @@ function TaskCompanion() {
   useEffect(() => {
     const cleanupExpiredTasks = async () => {
       try {
-        await fetch(`${API_BASE_URL}/delete-old-tasks`, {
+        // FIXED: Use full API URL for development
+        await fetch(`${API_BASE_URL}/api/delete-old-tasks`, {
           method: 'DELETE'
         });
         console.log('Cleaned up old tasks from backend');
@@ -250,7 +252,8 @@ function TaskCompanion() {
     
     // Update backend
     try {
-      await fetch(`${API_BASE_URL}/update-task/${taskId}`, {
+      // FIXED: Use full API URL for development
+      await fetch(`${API_BASE_URL}/api/update-task/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -291,7 +294,8 @@ function TaskCompanion() {
   // Remove task from both backend and frontend
   const removeTask = async (taskId) => {
     try {
-      await fetch(`${API_BASE_URL}/delete-task/${taskId}`, {
+      // FIXED: Use full API URL for development
+      await fetch(`${API_BASE_URL}/api/delete-task/${taskId}`, {
         method: 'DELETE'
       });
       console.log('Deleted task from backend');
@@ -320,7 +324,8 @@ function TaskCompanion() {
 
     // Save to backend first
     try {
-      const response = await fetch(`${API_BASE_URL}/add-task`, {
+      // FIXED: Use full API URL for development
+      const response = await fetch(`${API_BASE_URL}/api/add-task`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

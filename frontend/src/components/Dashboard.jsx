@@ -8,17 +8,18 @@ import {
   faArrowLeft, faEye, faEyeSlash, faTimes, faExpand, faCompress,
   faChartPie, faChartLine, faTrophy, faFire, faStar, faCalendarCheck
 } from '@fortawesome/free-solid-svg-icons';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import '../Dashboard.css';
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement);
-
-// Backend API URL
-const API_BASE_URL = 'http://127.0.0.1:5000';
+// FIXED: Added Filler plugin to resolve Chart.js warning
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler);
 
 export default function Dashboard() {
+  // API Base URL - Set directly for development
+  const API_BASE_URL = 'http://127.0.0.1:5000';
+
   const navigate = useNavigate();
   const { state } = useLocation();
   const [viewMode, setViewMode] = useState('weekly');
@@ -42,7 +43,8 @@ export default function Dashboard() {
     const fetchTasksFromBackend = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/get-tasks`);
+        // FIXED: Use full API URL for development
+        const response = await fetch(`${API_BASE_URL}/api/get-tasks`);
         if (response.ok) {
           const backendTasks = await response.json();
           // Transform backend tasks to match frontend format
@@ -53,7 +55,7 @@ export default function Dashboard() {
             endTime: task.end_time,
             completed: task.status === 'completed',
             note: task.notes,
-            tag: 'general', // Default tag since backend doesn't store this
+            tag: 'general',
             createdAt: task.created_at,
             date: new Date(task.created_at).toISOString().split('T')[0]
           }));
@@ -75,7 +77,8 @@ export default function Dashboard() {
   useEffect(() => {
     const cleanupOldTasks = async () => {
       try {
-        await fetch(`${API_BASE_URL}/delete-old-tasks`, {
+        // FIXED: Use full API URL for development
+        await fetch(`${API_BASE_URL}/api/delete-old-tasks`, {
           method: 'DELETE'
         });
       } catch (error) {
@@ -84,7 +87,6 @@ export default function Dashboard() {
     };
 
     cleanupOldTasks();
-    // Set up interval to clean up every hour
     const cleanupInterval = setInterval(cleanupOldTasks, 60 * 60 * 1000);
     
     return () => clearInterval(cleanupInterval);
