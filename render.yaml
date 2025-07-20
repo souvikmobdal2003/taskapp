@@ -3,14 +3,25 @@ services:
     name: fullstack-app
     env: python
     buildCommand: |
+      echo "=== Starting build process ===" &&
+      pwd &&
+      ls -la &&
       pip install -r backend/requirements.txt &&
+      echo "=== Frontend build starting ===" &&
       cd frontend &&
+      pwd &&
       npm install &&
       npm run build &&
+      echo "=== Build completed, checking dist ===" &&
+      ls -la dist/ &&
       cd .. &&
+      echo "=== Creating static directory ===" &&
       mkdir -p backend/static &&
+      echo "=== Copying files ===" &&
       cp -r frontend/dist/* backend/static/ &&
-      ls -la backend/static/
+      echo "=== Verifying copy ===" &&
+      ls -la backend/static/ &&
+      echo "=== Build process complete ==="
     startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
     workingDir: .
     plan: free
