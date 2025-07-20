@@ -4,9 +4,13 @@ services:
     env: python
     buildCommand: |
       pip install -r backend/requirements.txt &&
-      cd frontend && npm install && npm run build &&
-      mkdir -p ../backend/static &&
-      cp -r dist/* ../backend/static/
+      cd frontend &&
+      npm install &&
+      npm run build &&
+      cd .. &&
+      mkdir -p backend/static &&
+      cp -r frontend/dist/* backend/static/ &&
+      ls -la backend/static/
     startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
     workingDir: .
     plan: free
