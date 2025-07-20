@@ -5,10 +5,13 @@ services:
     buildCommand: |
       pip install -r backend/requirements.txt &&
       cd frontend && npm install && npm run build &&
+      mkdir -p ../backend/static &&
       cp -r dist/* ../backend/static/
     startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
     workingDir: .
     plan: free
     envVars:
       - key: FLASK_ENV
+        value: production
+      - key: NODE_ENV
         value: production
