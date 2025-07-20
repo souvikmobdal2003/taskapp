@@ -59,7 +59,7 @@ def init_db():
 # Initialize database
 init_db()
 
-# ==================== API ROUTES (MUST BE DEFINED FIRST) ====================
+# ==================== API ROUTES ====================
 
 @app.route("/api/get-tasks", methods=["GET"])
 def get_tasks():
@@ -208,7 +208,6 @@ def api_status():
 def serve_react_app():
     """Serve the main React application"""
     try:
-        # Check if static directory exists and has files
         static_path = os.path.join(os.getcwd(), 'static')
         index_path = os.path.join(static_path, 'index.html')
         
@@ -252,7 +251,6 @@ def serve_static_files(path):
         if os.path.exists(static_file_path):
             return send_from_directory('static', path)
         else:
-            # For React Router - serve index.html for any non-API route
             index_path = os.path.join(app.static_folder, 'index.html')
             if os.path.exists(index_path):
                 return send_file('static/index.html')
@@ -286,6 +284,8 @@ def debug_static_info():
     
     return jsonify(debug_info)
 
+# ==================== PRODUCTION DEPLOYMENT ====================
+
 if __name__ == "__main__":
     print("🚀 Starting Task Companion Backend...")
     print(f"📊 Database: {DB_NAME}")
@@ -298,4 +298,12 @@ if __name__ == "__main__":
     print("   GET    /debug/static-info")
     print("📱 Static Serving: React frontend integration enabled")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Get port from environment variable (Railway will set this)
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Run with production settings
+    app.run(
+        debug=False,  # Changed to False for production
+        host='0.0.0.0',  # Allow external connections
+        port=port  # Use environment port
+    )
