@@ -4,38 +4,43 @@ services:
     env: python
     buildCommand: |
       echo "=== Build Process Starting ===" &&
-      echo "Working directory:" && pwd &&
-      echo "Directory contents:" && ls -la &&
+      echo "Current directory: $(pwd)" &&
+      echo "Directory structure:" &&
+      find . -maxdepth 2 -type d &&
       echo "=== Installing Python Dependencies ===" &&
       pip install -r backend/requirements.txt &&
-      echo "=== Python dependencies installed successfully ===" &&
+      echo "=== Python dependencies installed ===" &&
+      echo "=== Checking frontend directory ===" &&
+      ls -la frontend/ &&
       echo "=== Starting Frontend Build ===" &&
       cd frontend &&
-      echo "Frontend directory contents:" && ls -la &&
-      echo "Installing npm dependencies..." &&
+      echo "In frontend directory: $(pwd)" &&
       npm ci --production=false &&
-      echo "Building React app..." &&
+      echo "=== Building React app ===" &&
       npm run build &&
-      echo "Build completed, checking dist directory:" &&
+      echo "=== Checking build output ===" &&
       ls -la dist/ &&
-      echo "Dist directory contents:" &&
-      find dist -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -10 &&
-      echo "=== Returning to root directory ===" &&
+      echo "Build contents:" &&
+      find dist/ -type f | head -20 &&
+      echo "=== Returning to root and preparing static ===" &&
       cd .. &&
-      echo "=== Creating backend static directory ===" &&
+      echo "Back in: $(pwd)" &&
+      echo "=== Removing old static directory ===" &&
       rm -rf backend/static &&
+      echo "=== Creating new static directory ===" &&
       mkdir -p backend/static &&
-      echo "=== Copying React build to Flask static directory ===" &&
-      cp -r frontend/dist/* backend/static/ &&
-      echo "=== Verifying files were copied ===" &&
-      echo "Backend static directory contents:" &&
+      echo "Static directory created: $(ls -ld backend/static)" &&
+      echo "=== Copying React build files ===" &&
+      cp -rv frontend/dist/* backend/static/ &&
+      echo "=== Verifying copy operation ===" &&
+      echo "Static directory after copy:" &&
       ls -la backend/static/ &&
-      echo "Checking for index.html:" &&
-      test -f backend/static/index.html && echo "✅ index.html found" || echo "❌ index.html missing" &&
-      echo "Checking for assets:" &&
-      ls -la backend/static/assets/ 2>/dev/null && echo "✅ Assets found" || echo "❌ Assets missing" &&
-      echo "=== Build Process Completed Successfully ==="
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 1
+      echo "Checking for index.html specifically:" &&
+      ls -la backend/static/index.html &&
+      echo "=== Verifying file contents ===" &&
+      head -n 5 backend/static/index.html &&
+      echo "=== Build completed successfully ==="
+    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
     workingDir: .
     plan: free
     envVars:
