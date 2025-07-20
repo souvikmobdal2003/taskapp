@@ -1,0 +1,8 @@
+{
+ "name": "Task Companion",
+  "short_name": "TaskApp",
+  "notifications": ["badge", "sound", "vibrate"],
+  "permissions": ["notifications"]
+    }
+  
+
