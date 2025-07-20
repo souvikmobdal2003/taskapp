@@ -13,7 +13,7 @@ services:
   - type: web
     name: react-frontend
     env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: frontend/dist
+    buildCommand:  npm run preview
+    staticPublishPath: taskapp/frontend/dist
     workingDir: frontend
     plan: free
